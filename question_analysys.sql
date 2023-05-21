@@ -36,7 +36,7 @@ FROM (
 
 -- 5) How often is the average order value for a second purchase, larger than the first purchase?
 
--- create table with clients whom made more than one order
+-- STEP 5.1 -- create table with clients whom made more than one order
 WITH orders_CTE (order_id, customer_unique_id, payment_value, order_purchase_timestamp)
 AS (
 	SELECT
@@ -60,7 +60,7 @@ AS (
 			HAVING COUNT(*) > 1
 		)
 ),
--- grouped orders_CTE lowers granularity of orders_CTE to sum of each order
+-- STEP 5.2 -- grouped orders_CTE lowers granularity of orders_CTE to sum of each order
 grouped_orders_CTE (order_id, customer_unique_id, order_purchase_timestamp, sum_payment_value)
 AS (
 	SELECT 
@@ -73,16 +73,34 @@ AS (
 		order_id
 		,customer_unique_id
 		,order_purchase_timestamp
+),
+-- STEP 5.3 -- add partition by column witch contaitns value of first order and count orders by customer_unique_id
+counted_grouped_orders_CTE (customer_unique_id, order_purchase_timestamp, sum_payment_value, customer_first_purchase_amount, customer_second_purchase_amount,order_rank)
+AS (
+	SELECT 
+		customer_unique_id
+		,order_purchase_timestamp
+		,sum_payment_value
+		,FIRST_VALUE(sum_payment_value) OVER (PARTITION BY customer_unique_id ORDER BY order_purchase_timestamp ASC) AS customer_first_purchase_value
+		,LEAD(sum_payment_value) OVER (PARTITION BY customer_unique_id ORDER BY order_purchase_timestamp ASC) AS customer_second_purchase_value
+		,ROW_NUMBER() OVER(PARTITION BY customer_unique_id ORDER BY order_purchase_timestamp ASC)
+	FROM grouped_orders_CTE
+),
+-- STEP 5.4 -- create list of 1st and 2nd order value for each customer
+customers_first_and_second_order_values_CTE (customer_unique_id, customer_first_purchase_amount, customer_second_purchase_amount)
+AS (
+	SELECT
+		customer_unique_id
+		,customer_first_purchase_amount
+		,customer_second_purchase_amount
+	FROM counted_grouped_orders_CTE
+	WHERE order_rank = 1
 )
--- add partition by column witch contaitns value of first order
-SELECT 
-	 customer_unique_id
-	,order_purchase_timestamp
-	,sum_payment_value
-	,FIRST_VALUE(sum_payment_value) OVER (PARTITION BY customer_unique_id ORDER BY order_purchase_timestamp ASC) AS customer_first_purchase_amount
-FROM grouped_orders_CTE;
+-- STEP 5.5 -- how many customers
+SELECT COUNT(*)
+FROM customers_first_and_second_order_values_CTE;
 
 
 
 
- 
+
