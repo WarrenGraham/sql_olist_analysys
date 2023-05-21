@@ -36,7 +36,8 @@ FROM (
 
 -- 5) How often is the average order value for a second purchase, larger than the first purchase?
 
-WITH orders_CTE (order_id, customer_unique_id, payment_value,order_purchase_timestamp)
+-- create table with clients whom made more than one order
+WITH orders_CTE (order_id, customer_unique_id, payment_value, order_purchase_timestamp)
 AS (
 	SELECT
 		 OP.order_id
@@ -59,6 +60,7 @@ AS (
 			HAVING COUNT(*) > 1
 		)
 ),
+-- grouped orders_CTE lowers granularity of orders_CTE to sum of each order
 grouped_orders_CTE (order_id, customer_unique_id, order_purchase_timestamp, sum_payment_value)
 AS (
 	SELECT 
@@ -72,65 +74,14 @@ AS (
 		,customer_unique_id
 		,order_purchase_timestamp
 )
--- this is query for selection earliest purchase for each customer
+-- add partition by column witch contaitns value of first order
 SELECT 
-	 order_id
-	,customer_unique_id
+	 customer_unique_id
+	,order_purchase_timestamp
 	,sum_payment_value
 	,FIRST_VALUE(sum_payment_value) OVER (PARTITION BY customer_unique_id ORDER BY order_purchase_timestamp ASC) AS customer_first_purchase_amount
-	,order_purchase_timestamp
-FROM grouped_orders_CTE
-WHERE customer_unique_id ='9a736b248f67d166d2fbb006bcb877c3'
-ORDER BY order_purchase_timestamp
+FROM grouped_orders_CTE;
 
-
-/* test 1 (go investigate ''top'' client, why 31 payments? maybe this is number of installments)
-should i group in grouped_orders_CTE or should i consider this data in other way? check for dbo.order_payments*/
-
-/*
-WITH orders_CTE (order_id, customer_unique_id, payment_value,order_purchase_timestamp)
-AS (
-	SELECT
-		 OP.order_id
-		,C.customer_unique_id
-		,OP.payment_value
-		,O.order_purchase_timestamp
-	FROM order_payments AS OP
-	INNER JOIN 
-		orders AS O
-		ON OP.order_id = O.order_id
-	INNER JOIN 
-		customers AS C
-		ON c.customer_id = O.customer_id
-	WHERE
-		C.customer_unique_id IN (
-			SELECT
-				customer_unique_id
-			FROM customers
-			GROUP BY customer_unique_id
-			HAVING COUNT(*) > 1
-		)
-)
-
-
-SELECT 
-	 order_id
-	,customer_unique_id
-	,payment_value
-	,FIRST_VALUE(payment_value) OVER (PARTITION BY customer_unique_id ORDER BY order_purchase_timestamp DESC) AS top_purchase_of_customer
-	,order_purchase_timestamp
-FROM orders_CTE
-WHERE customer_unique_id ='9a736b248f67d166d2fbb006bcb877c3'
-ORDER BY order_purchase_timestamp
-*/
-
-
-
---9a736b248f67d166d2fbb006bcb877c3 TOP KLIENT
-
---	What is the average order value by city?
-
---	What's the total value of orders that haven't been delivered?
 
 
 
