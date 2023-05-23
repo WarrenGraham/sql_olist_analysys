@@ -96,9 +96,20 @@ AS (
 	FROM counted_grouped_orders_CTE
 	WHERE order_rank = 1
 )
--- STEP 5.5 -- how many customers
-SELECT COUNT(*)
+-- STEP 5.5 -- save STEP 5.4 result
+
+SELECT *
+INTO #customers_first_and_second_order_values_TEMP
 FROM customers_first_and_second_order_values_CTE;
+
+
+
+
+
+
+
+
+
 
 
 
