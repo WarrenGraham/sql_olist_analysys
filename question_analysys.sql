@@ -97,10 +97,41 @@ AS (
 	WHERE order_rank = 1
 )
 -- STEP 5.5 -- save STEP 5.4 result
-
 SELECT *
 INTO #customers_first_and_second_order_values_TEMP
 FROM customers_first_and_second_order_values_CTE;
+-- STEP 5.6 -- how many clients made more than 1 order
+WITH more_than_one_order_CTE (id, count_result)
+AS (
+	SELECT 1, COUNT(*) 
+	FROM #customers_first_and_second_order_values_TEMP
+),
+-- STEP 5.7 -- how many clients made 2nd order larger than 1st one
+second_more_expensive_CTE (id, count_result)
+AS (
+	SELECT 1, COUNT(*) 
+	FROM #customers_first_and_second_order_values_TEMP
+	WHERE customer_second_purchase_amount > customer_first_purchase_amount
+)
+-- STEP 5.8 -- result table 
+SELECT 
+	m.count_result AS more_than_one_purchase_client_count
+	,s.count_result AS second_purchase_larger_client_count
+	,ROUND(CAST(S.count_result AS FLOAT) / CAST(M.count_result AS FLOAT) * 100, 2) AS perc_how_many_clients_2nd_purchase_larger
+FROM more_than_one_order_CTE AS M
+INNER JOIN second_more_expensive_CTE AS S
+	ON M.id = S.id;
+
+ 
+
+
+
+
+
+
+
+
+
 
 
 
