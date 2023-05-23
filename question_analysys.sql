@@ -37,6 +37,8 @@ FROM (
 -- 5) How often is the average order value for a second purchase, larger than the first purchase?
 
 -- STEP 5.1 -- create table with clients whom made more than one order
+DROP TABLE IF EXISTS #customers_first_and_second_order_values_TEMP
+GO
 WITH orders_CTE (order_id, customer_unique_id, payment_value, order_purchase_timestamp)
 AS (
 	SELECT
@@ -99,7 +101,8 @@ AS (
 -- STEP 5.5 -- save STEP 5.4 result
 SELECT *
 INTO #customers_first_and_second_order_values_TEMP
-FROM customers_first_and_second_order_values_CTE;
+FROM customers_first_and_second_order_values_CTE
+GO
 -- STEP 5.6 -- how many clients made more than 1 order
 WITH more_than_one_order_CTE (id, count_result)
 AS (
