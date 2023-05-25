@@ -124,6 +124,36 @@ SELECT
 FROM more_than_one_order_CTE AS M
 INNER JOIN second_more_expensive_CTE AS S
 	ON M.id = S.id;
+-- 	6) What is the average order value by city?
+
+-- STEP 6.1 calculate table, summing orders value
+WITH orders_payment_values_CTE(order_id, order_value)
+AS (
+	SELECT
+		order_id
+		,SUM(payment_value)
+	FROM order_payments
+	GROUP BY order_id
+)
+-- STEP 6.2 calculate table, summing orders value
+SELECT
+	 C.customer_city
+	,COUNT(*) AS number_of_orders
+	,ROUND(AVG(OPV.order_value), 2) AS avarage_order_value
+	,SUM(OPV.order_value) AS total_order_value
+FROM orders_payment_values_CTE AS OPV
+INNER JOIN orders AS O
+	ON OPV.order_id = O.order_id
+INNER JOIN customers AS C
+	ON O.customer_id = C.customer_id
+GROUP BY C.customer_city
+ORDER BY 4 DESC;
+
+
+/*
+--	7) What’s the total value of orders that haven’t been delivered?
+*/
+
 
  
 
