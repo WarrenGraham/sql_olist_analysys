@@ -127,6 +127,8 @@ INNER JOIN second_more_expensive_CTE AS S
 -- 	6) What is the average order value by city?
 
 -- STEP 6.1 calculate table, summing orders value
+DROP TABLE IF EXISTS #group_by_countries_temp
+GO
 WITH orders_payment_values_CTE(order_id, order_value)
 AS (
 	SELECT
@@ -134,24 +136,60 @@ AS (
 		,SUM(payment_value)
 	FROM order_payments
 	GROUP BY order_id
-)
+),
 -- STEP 6.2 calculate table, summing orders value
-SELECT
-	 C.customer_city
-	,COUNT(*) AS number_of_orders
-	,ROUND(AVG(OPV.order_value), 2) AS avarage_order_value
-	,SUM(OPV.order_value) AS total_order_value
-FROM orders_payment_values_CTE AS OPV
-INNER JOIN orders AS O
-	ON OPV.order_id = O.order_id
-INNER JOIN customers AS C
-	ON O.customer_id = C.customer_id
-GROUP BY C.customer_city
-ORDER BY 4 DESC;
+group_by_cities_CTE(customer_city, number_of_orders, avarage_order_value, total_order_value)
+AS(
+	SELECT
+		C.customer_city
+		,COUNT(*) AS number_of_orders
+		,ROUND(AVG(OPV.order_value), 2) AS avarage_order_value
+		,SUM(OPV.order_value) AS total_order_value
+	FROM orders_payment_values_CTE AS OPV
+	INNER JOIN orders AS O
+		ON OPV.order_id = O.order_id
+	INNER JOIN customers AS C
+		ON O.customer_id = C.customer_id
+	GROUP BY C.customer_city
+)
+-- STEP 6.3 create temp table (for further usage)
+SELECT * 
+INTO #group_by_countries_temp
+FROM group_by_cities_CTE
+-- STEP 6.4 display result
+SELECT * 
+FROM #group_by_countries_temp;
 
+--	7) show cities which makeing 80% of income - is paretho true here?
+
+-- STEP 7.1
+-- execute question 6 query to create #group_by_countries_temp
+-- STEP 7.2 -- add running total column and populate paretho check
+WITH running_total_CTE(customer_city, number_of_orders, avarage_order_value, total_order_value, running_total_order_value, perc, paretho_check_city_customer)
+AS(
+	SELECT
+		*
+		,SUM(total_order_value) OVER (ORDER BY total_order_value DESC) AS running_total_order_value
+		,( SUM(total_order_value) OVER (ORDER BY total_order_value DESC) ) * 100 / ( SUM(total_order_value) OVER() ) AS perc
+		,CASE 
+			WHEN ( SUM(total_order_value) OVER (ORDER BY total_order_value DESC) ) * 100 / ( SUM(total_order_value) OVER() ) >= 0.8 
+			THEN 1 
+			ELSE 0 
+		END AS paretho_check_city_customer
+	FROM #group_by_countries_temp
+)
+-- show only 80% value cities
+SELECT *
+FROM running_total_CTE
+WHERE paretho_check_city_customer = 1;
 
 /*
---	7) What’s the total value of orders that haven’t been delivered?
+--	8) What is the average order value by city seller? How much % of orders was made in hometown
+--	   show is paretho true for running total income, count and % hometown sell
+*/
+
+/*
+--	9) What’s the total value of orders that haven’t been delivered?
 */
 
 
