@@ -156,6 +156,7 @@ AS(
 SELECT * 
 INTO #group_by_countries_temp
 FROM group_by_cities_CTE
+GO
 -- STEP 6.4 display result
 SELECT * 
 FROM #group_by_countries_temp;
@@ -187,24 +188,64 @@ WHERE paretho_check_city_customer = 1;
 --	8) What is the average order value by city seller? How much % of orders was made in hometown
 --	   show is paretho true for running total income, count and % hometown sell
 */
-
+-- STEP 8.1 calculate table, summing orders value
+DROP TABLE IF EXISTS #group_by_seller_city_temp
+GO
+WITH orders_payment_values_CTE(order_id, order_value)
+AS (
+	SELECT
+		order_id
+		,SUM(payment_value)
+	FROM order_payments
+	GROUP BY order_id
+),
+-- STEP 8.2 calculate table, summing orders value
+group_by_seller_city_CTE(customer_city, number_of_orders, avarage_order_value, total_order_value) -- fix it 
+AS(
+	SELECT
+		S.seller_city
+		,COUNT(*) AS number_of_orders
+		,ROUND(AVG(OPV.order_value), 2) AS avarage_order_value
+		,SUM(OPV.order_value) AS total_order_value
+	FROM orders_payment_values_CTE AS OPV
+	INNER JOIN 
+		orders AS O
+		ON OPV.order_id = O.order_id
+	INNER JOIN 
+		order_items AS OI
+		ON O.order_id = OI.order_id
+	INNER JOIN 
+		sellers AS S
+		ON OI.seller_id = S.seller_id
+	GROUP BY S.seller_city
+)
+-- STEP 8.3 create temp table (for further usage)
+SELECT * 
+INTO #group_by_seller_city_temp
+FROM group_by_seller_city_CTE;
+-- 8.4.1 display results
+SELECT *
+FROM #group_by_seller_city_temp
+-- 8.4.2 it appears to one mistake value in seller_city column - first value
+SELECT DISTINCT seller_city 
+FROM sellers
+ORDER BY 1 ASC;
+-- 8.4.3 set null in incorect field
+UPDATE sellers
+SET seller_city = null
+WHERE seller_city = '04482255';
+-- 8.4.4 check for nulls 
+SELECT 
+	SUM(CASE 
+		WHEN seller_city is NULL
+		THEN 1 
+		ELSE 0
+		END
+	)
+FROM sellers;
 /*
 --	9) What’s the total value of orders that haven’t been delivered?
 */
-
-
- 
-
-
-
-
-
-
-
-
-
-
-
 
 
 
