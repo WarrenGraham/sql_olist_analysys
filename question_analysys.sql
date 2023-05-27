@@ -182,7 +182,7 @@ AS(
 -- show only 80% value cities
 SELECT *
 FROM running_total_CTE
-WHERE paretho_check_city_customer = 1;
+WHERE paretho_check_city_customer = 1;.
 
 /*
 --	8) What is the average order value by city seller? How much % of orders was made in hometown
@@ -200,7 +200,7 @@ AS (
 	GROUP BY order_id
 ),
 -- STEP 8.2 calculate table, summing orders value
-group_by_seller_city_CTE(customer_city, number_of_orders, avarage_order_value, total_order_value) -- fix it 
+group_by_seller_city_CTE(seller_city, number_of_orders, avarage_order_value, total_order_value) 
 AS(
 	SELECT
 		S.seller_city
