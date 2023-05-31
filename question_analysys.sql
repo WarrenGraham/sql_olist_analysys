@@ -166,19 +166,16 @@ FROM #group_by_countries_temp;
 -- STEP 7.1
 -- execute question 6 query to create #group_by_countries_temp
 -- STEP 7.2 -- add running total column and populate paretho check
-WITH running_total_CTE(customer_city, number_of_orders, avarage_order_value, total_order_value, running_total_order_value, perc, paretho_check_city_customer)
-AS(
-	SELECT
-		*
-		,SUM(total_order_value) OVER (ORDER BY total_order_value DESC) AS running_total_order_value
-		,( SUM(total_order_value) OVER (ORDER BY total_order_value DESC) ) * 100 / ( SUM(total_order_value) OVER() ) AS perc
-		,CASE 
-			WHEN ( SUM(total_order_value) OVER (ORDER BY total_order_value DESC) ) * 100 / ( SUM(total_order_value) OVER() ) >= 0.8 
-			THEN 1 
-			ELSE 0 
-		END AS paretho_check_city_customer
-	FROM #group_by_countries_temp
-)
+SELECT
+	*
+	,SUM(total_order_value) OVER (ORDER BY total_order_value DESC) AS running_total_order_value
+	,( SUM(total_order_value) OVER (ORDER BY total_order_value DESC) ) * 100 / ( SUM(total_order_value) OVER() ) AS perc
+	,CASE 
+		WHEN ( SUM(total_order_value) OVER (ORDER BY total_order_value DESC) ) * 100 / ( SUM(total_order_value) OVER() ) <= 80
+		THEN 1 
+		ELSE 0 
+	END AS paretho_check_city_customer
+FROM #group_by_countries_temp
 -- show only 80% value cities
 SELECT *
 FROM running_total_CTE
