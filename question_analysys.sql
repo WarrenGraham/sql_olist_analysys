@@ -185,8 +185,7 @@ WHERE paretho_check_city_customer = 1;
 SELECT ROUND(CAST(SUM(paretho_check_city_customer) AS float) * 100 / CAST(COUNT(*) AS float), 2)
 FROM #running_total_temp
 /*
---	8) What is the average order value by city seller? How much % of orders was made in hometown
---	   show is paretho true for running total income, count and % hometown sell
+--	8) What is the average order value by city seller? 
 */
 -- STEP 8.1 calculate table, summing orders value
 DROP TABLE IF EXISTS #group_by_seller_city_temp
@@ -260,18 +259,78 @@ ORDER BY perc;
 -- is 20% of sellers group by headquater city makeing 80% of order value
 SELECT ROUND(CAST(SUM(paretho_check_city_seller) AS float) * 100 / CAST(COUNT(*) AS float), 2)
 FROM #seller_cities_paretho_check_temp;
+--	9)	How much % of orders was made in hometown
+-- STEP 9.1 calculate table, summing orders value
+WITH orders_payment_values_CTE(order_id, order_value)
+AS (
+	SELECT
+		order_id
+		,SUM(payment_value)
+	FROM order_payments
+	GROUP BY order_id
+),
+-- STEP 9.2 calculate table, summing orders value and hometown check
+hometown_purchases_city_CTE(seller_city, customer_city, number_of_orders, avarage_order_value, total_order_value)  
+AS(
+	SELECT
+		S.seller_city
+		,C.customer_city
+		,COUNT(*) AS number_of_orders
+		,ROUND(AVG(OPV.order_value), 2) AS avarage_order_value
+		,SUM(OPV.order_value) AS total_order_value
+	FROM orders_payment_values_CTE AS OPV
+	INNER JOIN 
+		orders AS O
+		ON OPV.order_id = O.order_id
+	INNER JOIN 
+		order_items AS OI
+		ON O.order_id = OI.order_id
+	INNER JOIN 
+		sellers AS S
+		ON OI.seller_id = S.seller_id
+	INNER JOIN
+		customers AS C 
+		ON C.customer_id = O.customer_id
+	WHERE S.seller_city = C.customer_city
+	GROUP BY
+		S.seller_city
+		,C.customer_city
+),
+all_purchases_city_group_by_CTE(seller_city, number_of_orders, avarage_order_value, total_order_value)  
+AS(
+	SELECT
+		S.seller_city
+		,COUNT(*) AS number_of_orders
+		,ROUND(AVG(OPV.order_value), 2) AS avarage_order_value
+		,SUM(OPV.order_value) AS total_order_value
+	FROM orders_payment_values_CTE AS OPV
+	INNER JOIN 
+		orders AS O
+		ON OPV.order_id = O.order_id
+	INNER JOIN 
+		order_items AS OI
+		ON O.order_id = OI.order_id
+	INNER JOIN 
+		sellers AS S
+		ON OI.seller_id = S.seller_id
+	GROUP BY
+		S.seller_city
+)
+-- results and percentage of local trades
+SELECT 
+	 _hometown.seller_city AS city
+	,_hometown.number_of_orders AS HOMETOWN_orders_count
+	,_all.number_of_orders AS ALL_orders_count
+	,_hometown.avarage_order_value AS HOMETOWN_avg_order_value
+	,_all.avarage_order_value AS ALL_avg_order_value
+	,_hometown.total_order_value AS HOMETOWN_total_order_value
+	,_all.total_order_value AS ALL_total_order_value
+	,ROUND(CAST(_hometown.number_of_orders as float) * 100 / CAST(_all.number_of_orders as float), 2) AS perc_hometown_orders
+	,ROUND(CAST(_hometown.total_order_value as float) * 100 / CAST(_all.total_order_value as float), 2) AS perc_hometown_order_value
+FROM all_purchases_city_group_by_CTE AS _all
+INNER JOIN hometown_purchases_city_CTE AS _hometown
+	ON _hometown.seller_city = _all.seller_city
+ORDER BY perc_hometown_order_value DESC
 /*
---	9) What’s the total value of orders that haven’t been delivered?
+--	10) What’s the total value of orders that haven’t been delivered?
 */
-
- 
-
-
-
-
-
-
-
-
-
-
