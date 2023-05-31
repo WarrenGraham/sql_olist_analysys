@@ -175,10 +175,11 @@ SELECT
 		THEN 1 
 		ELSE 0 
 	END AS paretho_check_city_customer
+INTO #running_total_temp
 FROM #group_by_countries_temp
 -- show only 80% value cities
 SELECT *
-FROM running_total_CTE
+FROM #running_total_temp
 WHERE paretho_check_city_customer = 1;
 
 /*
