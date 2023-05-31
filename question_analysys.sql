@@ -181,7 +181,9 @@ FROM #group_by_countries_temp
 SELECT *
 FROM #running_total_temp
 WHERE paretho_check_city_customer = 1;
-
+-- is 20% of cities makeing 80% of order value
+SELECT ROUND(CAST(SUM(paretho_check_city_customer) AS float) * 100 / CAST(COUNT(*) AS float), 2)
+FROM #running_total_temp
 /*
 --	8) What is the average order value by city seller? How much % of orders was made in hometown
 --	   show is paretho true for running total income, count and % hometown sell
@@ -251,11 +253,13 @@ SELECT
 		WHEN ( SUM(total_order_value) OVER (ORDER BY total_order_value DESC) ) * 100 / ( SUM(total_order_value) OVER() ) <= 80
 		THEN 1
 		ELSE 0
-	END
+	END AS paretho_check_city_seller
+INTO #seller_cities_paretho_check_temp
 FROM #group_by_seller_city_temp
 ORDER BY perc;
-
-
+-- is 20% of sellers group by headquater city makeing 80% of order value
+SELECT ROUND(CAST(SUM(paretho_check_city_seller) AS float) * 100 / CAST(COUNT(*) AS float), 2)
+FROM #seller_cities_paretho_check_temp;
 /*
 --	9) What’s the total value of orders that haven’t been delivered?
 */
