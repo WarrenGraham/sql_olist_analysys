@@ -182,7 +182,7 @@ AS(
 -- show only 80% value cities
 SELECT *
 FROM running_total_CTE
-WHERE paretho_check_city_customer = 1;.
+WHERE paretho_check_city_customer = 1;
 
 /*
 --	8) What is the average order value by city seller? How much % of orders was made in hometown
@@ -237,17 +237,32 @@ WHERE seller_city = '04482255';
 -- 8.4.4 check for nulls 
 SELECT 
 	SUM(CASE 
-		WHEN seller_city is NULL
-		THEN 1 
-		ELSE 0
+			WHEN seller_city IS NULL
+			THEN 1 
+			ELSE 0
 		END
 	)
 FROM sellers;
+-- 8.5 is paretho true for running totals? 
+-- you need to execute 8.3 first
+SELECT
+	*
+	,SUM(total_order_value) OVER (ORDER BY total_order_value DESC) AS running_total_order_value
+	,( SUM(total_order_value) OVER (ORDER BY total_order_value DESC) ) * 100 / ( SUM(total_order_value) OVER() ) AS perc
+	,CASE 
+		WHEN ( SUM(total_order_value) OVER (ORDER BY total_order_value DESC) ) * 100 / ( SUM(total_order_value) OVER() ) <= 80
+		THEN 1
+		ELSE 0
+	END
+FROM #group_by_seller_city_temp
+ORDER BY perc;
+
+
 /*
 --	9) What’s the total value of orders that haven’t been delivered?
 */
 
-
+ 
 
 
 
