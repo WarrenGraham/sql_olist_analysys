@@ -334,3 +334,10 @@ ORDER BY perc_hometown_order_value DESC
 /*
 --	10) What’s the total value of orders that haven’t been delivered?
 */
+SELECT 
+	 O.order_status
+	,SUM(OI.price) AS order_total_value
+FROM orders AS O
+INNER JOIN order_items AS OI
+	ON O.order_id = OI.order_id
+GROUP BY O.order_status
