@@ -1,3 +1,4 @@
+CREATE DATABASE Olist_DB;
 USE Olist_DB;
 GO
 -- customers
