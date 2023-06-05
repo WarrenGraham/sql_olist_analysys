@@ -331,13 +331,73 @@ FROM all_purchases_city_group_by_CTE AS _all
 INNER JOIN hometown_purchases_city_CTE AS _hometown
 	ON _hometown.seller_city = _all.seller_city
 ORDER BY perc_hometown_order_value DESC
-/*
 --	10) What’s the total value of orders that haven’t been delivered?
-*/
 SELECT 
 	 O.order_status
 	,SUM(OI.price) AS order_total_value
 FROM orders AS O
 INNER JOIN order_items AS OI
 	ON O.order_id = OI.order_id
-GROUP BY O.order_status
+GROUP BY O.order_status;
+-- 11) How many individual clients buy each product and each category?
+-- STEP 11.1 Count on product_category granularity
+WITH product_category_CTE(x,y)
+AS(
+	SELECT 
+		translation.product_category_name_english	
+		,COUNT(DISTINCT C.customer_unique_id) AS Unique_Customers_Count
+	FROM customers AS C
+	INNER JOIN orders AS O
+		ON C.customer_id = O.customer_id
+	INNER JOIN order_items AS OI
+		ON OI.order_id = O.order_id
+	INNER JOIN products AS P
+		ON OI.product_id = P.product_id
+	LEFT JOIN product_category_name_translation AS translation
+		ON translation.product_category_name = P.product_category_name
+	GROUP BY translation.product_category_name_english	
+),
+-- STEP 11.2 Count on product granularity
+product_name_CTE(x,y,z)
+AS(
+	SELECT 
+		 translation.product_category_name_english
+		,P.product_id	
+		,COUNT(DISTINCT C.customer_unique_id) AS unique_customers_count
+	FROM customers AS C
+	INNER JOIN orders AS O
+		ON C.customer_id = O.customer_id
+	INNER JOIN order_items AS OI
+		ON OI.order_id = O.order_id
+	INNER JOIN products AS P
+		ON OI.product_id = P.product_id
+	LEFT JOIN product_category_name_translation AS translation
+		ON translation.product_category_name = P.product_category_name
+	GROUP BY 
+		 translation.product_category_name_english
+		,P.product_id
+)
+-- STEP 11.3 Join 2 CTE, present results
+SELECT 
+	 product.y AS product_id
+	,product.x AS category_name
+	,product.z AS unique_customers_count_per_product 
+	,category.y AS unique_customers_count_per_category
+FROM product_category_CTE AS category
+INNER JOIN product_name_CTE AS product
+	ON category.x = product.x
+ORDER BY 4 DESC, 2 ASC, 3 DESC, 1 ASC 
+-- check for nulls - why they here?
+SELECT TOP 1000 * 
+FROM products
+WHERE product_category_name IS NULL
+
+
+
+
+
+
+
+
+
+-- 12) Witch clients made at least 3 purchases and at least one in other product_category
