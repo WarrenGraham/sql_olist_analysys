@@ -386,18 +386,13 @@ SELECT
 FROM product_category_CTE AS category
 INNER JOIN product_name_CTE AS product
 	ON category.x = product.x
-ORDER BY 4 DESC, 2 ASC, 3 DESC, 1 ASC 
+ORDER BY
+	 4 DESC 
+	,2 ASC
+	,3 DESC 
+	,1 ASC 
 -- check for nulls - why they here?
 SELECT TOP 1000 * 
 FROM products
 WHERE product_category_name IS NULL
-
-
-
-
-
-
-
-
-
 -- 12) Witch clients made at least 3 purchases and at least one in other product_category
