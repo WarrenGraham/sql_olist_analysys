@@ -392,7 +392,54 @@ ORDER BY
 	,3 DESC 
 	,1 ASC 
 -- check for nulls - why they here?
-SELECT TOP 1000 * 
+SELECT * 
 FROM products
 WHERE product_category_name IS NULL
 -- 12) Witch clients made at least 3 purchases and at least one in other product_category
+-- STEP 12.1 Count purchases per customer in unique category
+WITH category_customer_puchases_CTE(customer_unique_id, unique_categories)
+AS(
+	SELECT
+		c.customer_unique_id
+		,COUNT(DISTINCT translation.product_category_name_english)
+	FROM customers AS C
+	INNER JOIN orders AS O
+		ON C.customer_id = O.customer_id
+	INNER JOIN order_items AS OI
+		ON OI.order_id = O.order_id
+	INNER JOIN products AS P
+		ON OI.product_id = P.product_id
+	LEFT JOIN product_category_name_translation AS translation
+		ON translation.product_category_name = P.product_category_name
+	GROUP BY 
+		c.customer_unique_id
+),
+-- STEP 12.2 COunt all puchases per customer
+all_purchases_count_CTE(customer_unique_id, all_purchase_count)
+AS(
+	SELECT
+		 c.customer_unique_id
+		,COUNT(*)
+	FROM customers AS C
+	INNER JOIN orders AS O
+		ON C.customer_id = O.customer_id
+	INNER JOIN order_items AS OI
+		ON OI.order_id = O.order_id
+	INNER JOIN products AS P
+		ON OI.product_id = P.product_id
+	LEFT JOIN product_category_name_translation AS translation
+		ON translation.product_category_name = P.product_category_name
+	GROUP BY 
+		c.customer_unique_id
+)
+-- STEP 12.3 Display results
+SELECT
+	cat.customer_unique_id	
+FROM category_customer_puchases_CTE AS cat
+INNER JOIN all_purchases_count_CTE AS _all
+	ON cat.customer_unique_id = _all.customer_unique_id
+WHERE cat.unique_categories > 1 AND _all.all_purchase_count > 2
+
+
+
+
