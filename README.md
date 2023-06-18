@@ -8,13 +8,18 @@ The [DB_creation.sql](https://github.com/WarrenGraham/sql_olist_analysys/blob/ma
 
 In [question_analysys.sql](https://github.com/WarrenGraham/sql_olist_analysys/blob/master/question_analysys.sql) you will find set of queries which can help dig into data. Each query starts with question from hypothetical stakeholder - execution of query returns the answer ansd let export data from database. Some of queries has been divided into steps with CTE or TEMP. tables. 
 
-## About dataset
+##	About dataset
 The data in csv. format has been published in kaggle.com - [click here](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce). This dataset was generously provided by Olist, the largest department store in Brazilian marketplaces. Olist connects small businesses from all over Brazil to channels without hassle and with a single contract. Those merchants are able to sell their products through the Olist Store and ship them directly to the customers using Olist logistics partners. The data granularity is set on order level. 
 
 **Attention**
 1. An order might have multiple items.
 2. Each item might be fulfilled by a distinct seller.
 3. All text identifying stores and partners where replaced by the names of Game of Thrones great houses.
+
+###	Database schema
+
+![Database schema](/sql_olist_analysys/DB_schema.png)
+*Source: [kaggle/olist_brasil](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)*
 
 # Execution
 
