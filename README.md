@@ -18,7 +18,7 @@ The data in csv. format has been published in kaggle.com - [click here](https://
 
 ###	Database schema
 
-![Database schema](/sql_olist_analysys/DB_schema.png)
+![DB_schema.png](DB_schema.png)
 *Source: [kaggle/olist_brasil](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)*
 
 # Execution
