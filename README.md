@@ -55,7 +55,6 @@ CREATE TABLE geolocation (
 	,geolocation_lng float(50)
 	,geolocation_city varchar(100)
 	,geolocation_state varchar(20)
-	-- TUTAJ DODAJ PRIMARY KEY o ile istnieje --
 );
 GO
 BULK INSERT geolocation
@@ -234,4 +233,5 @@ WITH (
 
 1. In `BULK INSERT FROM` section has been provided hard coded path to csv. on developer's computer. 
 <font color = red size = 5>**You must insert**</font> inside apostrophe marks path to csv on your device. In further work, developer should rewrite script to load data from parameter probided by user of script.
+
 2. If you are running above script in newer version of *SSMS* or other client, like *SQL Server tool for Visual Studio Code*, you may occur an error in BULK insert for some tables. When it happens, run the script batch by batch (code between `GO` key words)
