@@ -240,3 +240,25 @@ WITH (
 <font color = red size = 5>**You must insert**</font> inside apostrophe marks path to csv on your device. In further work, developer should rewrite script to load data from parameter probided by user of script.
 
 2. If you are running above script in newer version of *SSMS* or other client, like *SQL Server tool for Visual Studio Code*, you may occur an error in BULK insert for some tables. When it happens, run the script batch by batch (code between `GO` key words)
+
+3. In future works developer need to add primary key on `geolocation` and reference it on foreign key in related tables restriction.
+
+##	Exploration on database
+
+In this section you can find question, batch of code witch has been executed, printscreen with part of result. All quoted code you can find in repository in [question_analysys.sql](https://github.com/WarrenGraham/sql_olist_analysys/blob/master/question_analysys.sql)
+
+### Question 1  
+
+> Firstly, let's have a quick look into order database. How many orders we have?
+
+```sql
+SELECT 
+	COUNT(*) 
+FROM 
+	orders
+```
+
+
+
+
+
