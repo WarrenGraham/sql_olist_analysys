@@ -315,8 +315,6 @@ FROM (
 
 ![Q1 output](screenshots/004.png)
 
-The developer addictionaly add column with individuals orders per customer.
-
 ### Question 5
 
 > Finally, our stakeholder gives us some serious task. Having list of *loyal clients* he ask us to calculate percentage of customers, who made second order larger than first one.
