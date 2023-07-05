@@ -159,7 +159,8 @@ FROM group_by_cities_CTE
 GO
 -- STEP 6.4 display result
 SELECT * 
-FROM #group_by_countries_temp;
+FROM #group_by_countries_temp
+ORDER BY avarage_order_value DESC;
 
 --	7) show cities which makeing 80% of income - is paretho true here?
 
